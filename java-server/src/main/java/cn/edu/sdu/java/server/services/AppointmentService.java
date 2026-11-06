@@ -41,17 +41,20 @@ public class AppointmentService {
     private final DoctorRepository doctorRepository;
     private final MedicalRecordRepository medicalRecordRepository;
     private final AppointmentViewBuilder viewBuilder;
+    private final SystemService systemService;
 
     public AppointmentService(AppointmentRepository appointmentRepository,
                               ScheduleRepository scheduleRepository,
                               DoctorRepository doctorRepository,
                               MedicalRecordRepository medicalRecordRepository,
-                              AppointmentViewBuilder viewBuilder) {
+                              AppointmentViewBuilder viewBuilder,
+                              SystemService systemService) {
         this.appointmentRepository = appointmentRepository;
         this.scheduleRepository = scheduleRepository;
         this.doctorRepository = doctorRepository;
         this.medicalRecordRepository = medicalRecordRepository;
         this.viewBuilder = viewBuilder;
+        this.systemService = systemService;
     }
 
     /**
@@ -79,6 +82,7 @@ public class AppointmentService {
         appointment.setStatus(WAITING);
         appointment.setCreateTime(LocalDateTime.now());
         appointmentRepository.saveAndFlush(appointment);
+        systemService.modifyLog(appointment, true);
 
         int remainQuota = scheduleRepository.findById(schedule.getId())
                 .map(Schedule::getRemainQuota)
@@ -113,6 +117,7 @@ public class AppointmentService {
         appointment.setStatus(CANCELLED);
         appointmentRepository.save(appointment);
         scheduleRepository.increaseQuota(appointment.getScheduleId());
+        systemService.modifyLog(appointment, false);
     }
 
     /**
@@ -165,9 +170,11 @@ public class AppointmentService {
         record.setPrescription(request.getPrescription().trim());
         record.setCreateTime(LocalDateTime.now());
         medicalRecordRepository.saveAndFlush(record);
+        systemService.modifyLog(record, true);
 
         appointment.setStatus(ATTENDED);
         appointmentRepository.save(appointment);
+        systemService.modifyLog(appointment, false);
         return Map.of("recordId", record.getId());
     }
 

@@ -37,17 +37,20 @@ public class UserService {
     private final UserTypeRepository userTypeRepository;
     private final AppointmentRepository appointmentRepository;
     private final PasswordEncoder encoder;
+    private final SystemService systemService;
 
     public UserService(UserRepository userRepository,
                        PersonRepository personRepository,
                        UserTypeRepository userTypeRepository,
                        AppointmentRepository appointmentRepository,
-                       PasswordEncoder encoder) {
+                       PasswordEncoder encoder,
+                       SystemService systemService) {
         this.userRepository = userRepository;
         this.personRepository = personRepository;
         this.userTypeRepository = userTypeRepository;
         this.appointmentRepository = appointmentRepository;
         this.encoder = encoder;
+        this.systemService = systemService;
     }
 
     public UserItem getCurrentUser() {
@@ -64,6 +67,7 @@ public class UserService {
         person.setName(request.getRealName().trim());
         person.setEmail(normalizeEmail(request.getEmail()));
         personRepository.save(person);
+        systemService.modifyLog(person, false);
     }
 
     @Transactional
@@ -136,6 +140,7 @@ public class UserService {
         user.setLoginCount(0);
         user.setCreatorId(CommonMethod.getPersonId());
         userRepository.saveAndFlush(user);
+        systemService.modifyLog(person, true);
 
         return Map.of("id", person.getPersonId());
     }
@@ -154,6 +159,7 @@ public class UserService {
         person.setName(request.getRealName().trim());
         person.setEmail(normalizeEmail(request.getEmail()));
         personRepository.save(person);
+        systemService.modifyLog(person, false);
 
         if (request.getNewPassword() != null && !request.getNewPassword().isBlank()) {
             if (request.getNewPassword().length() < 6) {
@@ -179,6 +185,10 @@ public class UserService {
             throw new BusinessException("该用户存在关联数据，不能删除");
         }
         try {
+            Person person = personRepository.findById(id).orElse(null);
+            if (person != null) {
+                systemService.modifyLog(person, false);
+            }
             userRepository.delete(user);
             userRepository.flush();
             personRepository.deleteById(id);

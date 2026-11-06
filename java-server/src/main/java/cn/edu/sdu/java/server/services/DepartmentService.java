@@ -22,10 +22,13 @@ public class DepartmentService {
 
     private final DepartmentRepository departmentRepository;
     private final DoctorRepository doctorRepository;
+    private final SystemService systemService;
 
-    public DepartmentService(DepartmentRepository departmentRepository, DoctorRepository doctorRepository) {
+    public DepartmentService(DepartmentRepository departmentRepository, DoctorRepository doctorRepository,
+                             SystemService systemService) {
         this.departmentRepository = departmentRepository;
         this.doctorRepository = doctorRepository;
+        this.systemService = systemService;
     }
 
     /**
@@ -51,6 +54,7 @@ public class DepartmentService {
         Department dept = new Department();
         dept.setDeptName(deptName);
         departmentRepository.saveAndFlush(dept);
+        systemService.modifyLog(dept, true);
         return Map.of("id", dept.getId());
     }
 
@@ -64,6 +68,7 @@ public class DepartmentService {
         }
         dept.setDeptName(deptName);
         departmentRepository.save(dept);
+        systemService.modifyLog(dept, false);
     }
 
     @Transactional
@@ -74,5 +79,6 @@ public class DepartmentService {
             throw new BusinessException("该科室下还有医生，不能删除");
         }
         departmentRepository.delete(dept);
+        systemService.modifyLog(dept, false);
     }
 }

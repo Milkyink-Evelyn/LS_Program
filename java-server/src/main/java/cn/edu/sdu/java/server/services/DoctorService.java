@@ -42,6 +42,7 @@ public class DoctorService {
     private final UserTypeRepository userTypeRepository;
     private final ScheduleRepository scheduleRepository;
     private final PasswordEncoder encoder;
+    private final SystemService systemService;
 
     public DoctorService(DoctorRepository doctorRepository,
                          DepartmentRepository departmentRepository,
@@ -49,7 +50,8 @@ public class DoctorService {
                          UserRepository userRepository,
                          UserTypeRepository userTypeRepository,
                          ScheduleRepository scheduleRepository,
-                         PasswordEncoder encoder) {
+                         PasswordEncoder encoder,
+                         SystemService systemService) {
         this.doctorRepository = doctorRepository;
         this.departmentRepository = departmentRepository;
         this.personRepository = personRepository;
@@ -57,6 +59,7 @@ public class DoctorService {
         this.userTypeRepository = userTypeRepository;
         this.scheduleRepository = scheduleRepository;
         this.encoder = encoder;
+        this.systemService = systemService;
     }
 
     public List<DoctorItem> listDoctors(Integer deptId, String keyword) {
@@ -119,6 +122,8 @@ public class DoctorService {
         doctor.setTitle(request.getTitle().trim());
         doctor.setIntroduction(normalizeText(request.getIntroduction()));
         doctorRepository.saveAndFlush(doctor);
+        systemService.modifyLog(person, true);
+        systemService.modifyLog(doctor, true);
 
         return Map.of("doctorId", doctor.getId(), "userId", person.getPersonId());
     }
@@ -141,6 +146,8 @@ public class DoctorService {
         doctor.setTitle(request.getTitle().trim());
         doctor.setIntroduction(normalizeText(request.getIntroduction()));
         doctorRepository.save(doctor);
+        systemService.modifyLog(person, false);
+        systemService.modifyLog(doctor, false);
 
         if (request.getNewPassword() != null && !request.getNewPassword().isBlank()) {
             if (request.getNewPassword().length() < 6) {
@@ -166,6 +173,7 @@ public class DoctorService {
             userRepository.flush();
             personRepository.deleteById(userId);
             personRepository.flush();
+            systemService.modifyLog(doctor, false);
         } catch (DataIntegrityViolationException e) {
             throw new BusinessException("该医生还有排班或挂号记录，不能删除");
         }

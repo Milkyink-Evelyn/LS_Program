@@ -37,17 +37,20 @@ public class ScheduleService {
     private final DepartmentRepository departmentRepository;
     private final PersonRepository personRepository;
     private final AppointmentRepository appointmentRepository;
+    private final SystemService systemService;
 
     public ScheduleService(ScheduleRepository scheduleRepository,
                            DoctorRepository doctorRepository,
                            DepartmentRepository departmentRepository,
                            PersonRepository personRepository,
-                           AppointmentRepository appointmentRepository) {
+                           AppointmentRepository appointmentRepository,
+                           SystemService systemService) {
         this.scheduleRepository = scheduleRepository;
         this.doctorRepository = doctorRepository;
         this.departmentRepository = departmentRepository;
         this.personRepository = personRepository;
         this.appointmentRepository = appointmentRepository;
+        this.systemService = systemService;
     }
 
     /**
@@ -112,6 +115,7 @@ public class ScheduleService {
         schedule.setTotalQuota(total);
         schedule.setRemainQuota(total);
         scheduleRepository.saveAndFlush(schedule);
+        systemService.modifyLog(schedule, true);
         return Map.of("id", schedule.getId());
     }
 
@@ -133,6 +137,7 @@ public class ScheduleService {
         schedule.setTotalQuota(total);
         schedule.setRemainQuota((int) (total - booked));
         scheduleRepository.save(schedule);
+        systemService.modifyLog(schedule, false);
     }
 
     @Transactional
@@ -143,6 +148,7 @@ public class ScheduleService {
             throw new BusinessException("该排班已有挂号记录，不能删除");
         }
         scheduleRepository.delete(schedule);
+        systemService.modifyLog(schedule, false);
     }
 
     private List<ScheduleItem> buildItems(List<Schedule> schedules) {
