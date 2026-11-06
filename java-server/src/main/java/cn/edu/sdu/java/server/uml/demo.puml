@@ -1,59 +1,52 @@
 @startuml
-'https://plantuml.com/class-diagram
-
-class Person{
--personId：Integer
--num:string
+' 校医院预约挂号系统 - 分层架构图
+skinparam componentStyle rectangle
+skinparam rectangle {
+    RoundCorner 10
 }
-class User
-class Student
-class Teacher
-class Course
-class FamilyMember
-class Fee
-class Score
 
-class StudentController
-interface PersonRepository
-interface StudentRepository
-interface UserRepository
-interface UserTypeRepository
-class PasswordEncoder
-interface ScoreRepository
-interface FeeRepository
-interface familyMemberRepository
-class BaseService
-class StudentService
-class systemService
+actor "前端页面" as FE
 
-enum EUserType {
-ROLE_ADMIN
-ROLE_STUDENT
-ROLE_TEACHER
+rectangle "安全过滤层 configs" as SEC {
+    component "SecurityConfiguration\nJwtAuthenticationFilter" as SECURITY
 }
-User "1" o-- Person  : 聚合
-Student "1" *-- Person  : 包含
-Teacher "1" *-- Person  : 包含
-Fee "many" --o Student : 聚合
-FamilyMember "many" --o Student :聚合
-Score "many" --o Student :聚合
-Score "many" --o Course :聚合
-StudentController ..> PersonRepository :使用
-StudentController ..> StudentRepository
-StudentController ..> UserRepository
-StudentController ..> UserTypeRepository
-StudentController ..> PasswordEncoder
-StudentController ..> ScoreRepository
-StudentController ..> FeeRepository
-StudentController ..> familyMemberRepository
-StudentController ..> BaseService
-StudentController ..> StudentService
-StudentController ..> systemService
-PersonRepository ..> Person
-StudentRepository ..> Student
-UserRepository ..> User
-UserTypeRepository ..> UserType
-FeeRepository ..> fee
-familyMemberRepository ..> familyMember
+
+rectangle "接口层 controllers" as CTRL {
+    component "AuthController / UserController\nDepartmentController / DoctorController\nScheduleController / AppointmentController\nMedicalRecordController / ClinicStatisticsController" as CONTROLLERS
+}
+
+rectangle "业务层 services" as SVC {
+    component "AuthService / UserService\nDepartmentService / DoctorService\nScheduleService / AppointmentService\nMedicalRecordService / ClinicStatisticsService\nAppointmentViewBuilder / SystemService" as SERVICES
+}
+
+rectangle "持久层 repositorys" as REPO {
+    component "UserRepository / PersonRepository / UserTypeRepository\nDepartmentRepository / DoctorRepository / ScheduleRepository\nAppointmentRepository / MedicalRecordRepository\nModifyLogRepository / DictionaryInfoRepository\nSystemInfoRepository" as REPOSITORIES
+}
+
+rectangle "实体层 models" as ENT {
+    component "Person / User / UserType\nDepartment / Doctor / Schedule\nAppointment / MedicalRecord\nModifyLog / DictionaryInfo / SystemInfo" as MODELS
+}
+
+database "MySQL java_1_03" as DB
+
+FE --> SECURITY : /api/** 携带 JWT
+SECURITY --> CONTROLLERS : 认证通过后放行
+CONTROLLERS --> SERVICES : 调用业务方法
+SERVICES --> REPOSITORIES : 读写数据
+REPOSITORIES --> MODELS : JPA 映射
+REPOSITORIES --> DB : JPA / JDBC
+
+note right of SERVICES
+  统一响应 {code, msg, data}
+  业务异常 code=1
+  写操作调用 SystemService.modifyLog
+  记录 modify_log 审计
+end note
+
+note right of SECURITY
+  角色：ADMIN / DOCTOR / PATIENT
+  权限校验由 RoleUtil 在业务层完成
+  未登录 401，无权限 403
+end note
 
 @enduml

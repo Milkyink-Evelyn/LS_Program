@@ -1,16 +1,42 @@
-'https://plantuml.com/sequence-diagram
-
+@startuml
+' 校医院预约挂号系统 - 患者挂号时序图
 autonumber
-fxStudentController -> HttpRequestUtil: request req
-HttpRequestUtil --> StudentController: getStudentList dataRequest
-StudentController-> StudentController: getStudentMapList numName
-StudentController-> StudentRepository : findStudentListByNumName numName
-StudentRepository-> StudentController: findStudentListByNumName List
-loop
-StudentController-> StudentService: getMapFromStudent student s
-StudentService -> StudentController: getMapFromStudent map
+
+actor "患者" as P
+participant "前端页面" as FE
+participant "JwtAuthenticationFilter" as JWT
+participant "AppointmentController" as C
+participant "AppointmentService" as S
+participant "ScheduleRepository" as SR
+participant "AppointmentRepository" as AR
+participant "SystemService" as SYS
+database "MySQL" as DB
+
+P -> FE : 选择科室、医生、排班，点击挂号
+FE -> JWT : POST /api/appointments\nAuthorization: Bearer <token>
+JWT -> JWT : 校验 Token\n写入 SecurityContext
+JWT -> C : 放行请求
+C -> S : createAppointment(request)
+S -> SR : findById(scheduleId)
+SR --> S : Schedule
+S -> S : 校验排班未过期
+S -> AR : existsByPatientIdAndScheduleIdAndStatusNot(patientId, scheduleId, 2)
+AR --> S : false（未重复挂号）
+
+S -> SR : decreaseQuota(scheduleId)
+alt 号源已满
+    SR --> S : 影响行数 0
+    S --> C : BusinessException("号源已满")
+    C --> FE : {code:1, msg:"号源已满"}
+else 扣减成功
+    SR --> S : 影响行数 1
+    S -> AR : saveAndFlush(appointment)
+    AR -> DB : INSERT t_appointment（status=0）
+    S -> SYS : modifyLog(appointment, true)
+    SYS -> DB : INSERT modify_log
+    S --> C : {id, status:0, remainQuota}
+    C --> FE : {code:0, data:{...}}
 end
-StudentController-> StudentController: getStudentMapList List
-StudentController -> HttpRequestUtil: getStudentList dataResponse
-HttpRequestUtil --> fxStudentController: request res
+
+FE --> P : 提示挂号成功并刷新剩余号源
 @enduml

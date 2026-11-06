@@ -1,46 +1,66 @@
 @startuml
-'https://plantuml.com/use-case-diagram
-Student ---> (登录)
-Admin --->(登录)
-Admin ---> (修改密码)
-Student ---> (修改密码)
-Student ---> (基本信息)
-Student ---> (个人简介)
-Admin ---> (基本信息)
-Admin ---> (入学前信息)
-Student ---> (入学前信息)
-Admin ---> (家庭信息)
-Student ---> (家庭信息)
-Admin ---> (社会关系)
-Student ---> (社会关系)
-Admin ---> (课程管理)
-Admin ---> (选课管理)
-Admin ---> (出勤管理)
-Admin ---> (作业管理)
-Admin ---> (成绩管理)
-Student ---> (课程管理)
-Student ---> (选课管理)
-Student ---> (出勤管理)
-Student ---> (作业管理)
-Student ---> (成绩管理)
-Admin ---> (社会实践)
-Admin ---> (科技成果)
-Admin ---> (培训讲座)
-Admin ---> (校外实训)
-Admin ---> (荣誉奖励)
-Admin ---> (日常活动)
-Admin ---> (请假管理)
-Student ---> (社会实践)
-Student ---> (科技成果)
-Student ---> (培训讲座)
-Student ---> (校外实训)
-Student ---> (荣誉奖励)
-Student ---> (日常活动)
-Student ---> (请假管理)
-Student ---> (个人消费)
-Admin ---> (学生统计)
-Admin ---> (分类统计)
-Admin ---> (退出)
-Student ---> (退出)
+' 校医院预约挂号系统 - 用例图
+left to right direction
+skinparam packageStyle rectangle
 
+actor "患者\nPATIENT" as P
+actor "医生\nDOCTOR" as D
+actor "管理员\nADMIN" as A
+actor "登录用户\n（抽象）" as U
+
+U <|-- P
+U <|-- D
+U <|-- A
+
+rectangle "校医院预约挂号系统" {
+    usecase "浏览科室与医生" as UC_BROWSE
+    usecase "查看排班" as UC_SCHEDULE
+    usecase "预约挂号" as UC_BOOK
+    usecase "取消挂号" as UC_CANCEL
+    usecase "查看我的挂号" as UC_MY_APPT
+    usecase "查看我的病历" as UC_MY_RECORD
+
+    usecase "查看我的排班" as UC_DOC_SCHEDULE
+    usecase "查看就诊列表" as UC_DOC_LIST
+    usecase "接诊并填写病历" as UC_TREAT
+    usecase "查看患者病历" as UC_DOC_RECORD
+
+    usecase "科室管理" as UC_DEPT
+    usecase "医生管理" as UC_DOCTOR
+    usecase "排班管理" as UC_SCHEDULE_ADMIN
+    usecase "挂号管理" as UC_APPT_ADMIN
+    usecase "用户管理" as UC_USER
+    usecase "统计报表" as UC_STAT
+
+    usecase "登录 / 注册 / 找回密码" as UC_LOGIN
+    usecase "查看和修改个人资料" as UC_PROFILE
+    usecase "修改密码" as UC_PWD
+}
+
+P --> UC_BROWSE
+P --> UC_SCHEDULE
+P --> UC_BOOK
+P --> UC_CANCEL
+P --> UC_MY_APPT
+P --> UC_MY_RECORD
+
+D --> UC_DOC_SCHEDULE
+D --> UC_DOC_LIST
+D --> UC_TREAT
+D --> UC_DOC_RECORD
+
+A --> UC_DEPT
+A --> UC_DOCTOR
+A --> UC_SCHEDULE_ADMIN
+A --> UC_APPT_ADMIN
+A --> UC_USER
+A --> UC_STAT
+
+U --> UC_LOGIN
+U --> UC_PROFILE
+U --> UC_PWD
+
+UC_BOOK ..> UC_SCHEDULE : <<include>>
+UC_CANCEL ..> UC_MY_APPT : <<extend>>
+UC_TREAT ..> UC_DOC_LIST : <<include>>
 @enduml
