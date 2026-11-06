@@ -36,6 +36,8 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
     boolean existsByDoctorIdAndWorkDateAndTimeSlot(
             Integer doctorId, LocalDate workDate, Integer timeSlot);
 
+    boolean existsByDoctorId(Integer doctorId);
+
     /**
      * 条件更新扣减号源，返回 1 表示成功，0 表示号源已满。
      * 用单条 UPDATE 保证并发下不会超卖，不引入悲观锁/乐观锁。
