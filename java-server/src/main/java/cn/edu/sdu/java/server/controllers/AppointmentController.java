@@ -30,9 +30,12 @@ public class AppointmentController {
     }
 
     @GetMapping("/my")
-    public DataResponse listMyAppointments(@RequestParam(required = false) Integer status) {
+    public DataResponse listMyAppointments(
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         RoleUtil.requirePatient();
-        return CommonMethod.getReturnData(appointmentService.listMyAppointments(status));
+        return CommonMethod.getReturnData(appointmentService.listMyAppointments(status, date));
     }
 
     @PutMapping("/{id}/cancel")

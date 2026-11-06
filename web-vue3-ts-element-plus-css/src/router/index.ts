@@ -1,79 +1,164 @@
-// Composables
-import { createRouter, createWebHashHistory, createWebHistory } from "vue-router";
+import { createRouter, createWebHashHistory } from "vue-router";
+import type { Role } from "~/types";
+import { useAppStore } from "~/stores/app";
+import BasicLayout from "~/layouts/BasicLayout.vue";
 
-//路由表
+export const roleHome: Record<Role, string> = {
+  ADMIN: "/admin/dashboard",
+  DOCTOR: "/doctor/dashboard",
+  PATIENT: "/patient/home",
+};
+
+/** 已登录后不应再停留的页面 */
+const guestOnlyPaths = ["/login", "/register", "/forgot-password", "/reset-password"];
+/** 完全公开的页面 */
+const publicPaths = [...guestOnlyPaths, "/about"];
+
 const routes = [
-  //当路由为空时，重定向到登录页面
+  {
+    path: "/login",
+    name: "Login",
+    component: () => import("~/views/Login.vue"),
+    meta: { title: "登录" },
+  },
+  {
+    path: "/register",
+    name: "Register",
+    component: () => import("~/views/Register.vue"),
+    meta: { title: "用户注册" },
+  },
+  {
+    path: "/forgot-password",
+    name: "ForgotPassword",
+    component: () => import("~/views/ForgotPassword.vue"),
+    meta: { title: "忘记密码" },
+  },
+  {
+    path: "/reset-password",
+    name: "ResetPassword",
+    component: () => import("~/views/ResetPassword.vue"),
+    meta: { title: "重置密码" },
+  },
+  {
+    path: "/about",
+    name: "About",
+    component: () => import("~/views/About.vue"),
+    meta: { title: "关于项目" },
+  },
   {
     path: "/",
-    redirect: "/Login",
+    component: BasicLayout,
+    redirect: () => {
+      const store = useAppStore();
+      return store.user ? roleHome[store.user.role] : "/login";
+    },
+    children: [
+      {
+        path: "admin/dashboard",
+        component: () => import("~/views/admin/Dashboard.vue"),
+        meta: { title: "数据看板", roles: ["ADMIN"] },
+      },
+      {
+        path: "admin/departments",
+        component: () => import("~/views/admin/Departments.vue"),
+        meta: { title: "科室管理", roles: ["ADMIN"] },
+      },
+      {
+        path: "admin/doctors",
+        component: () => import("~/views/admin/Doctors.vue"),
+        meta: { title: "医生管理", roles: ["ADMIN"] },
+      },
+      {
+        path: "admin/schedules",
+        component: () => import("~/views/admin/Schedules.vue"),
+        meta: { title: "排班管理", roles: ["ADMIN"] },
+      },
+      {
+        path: "admin/appointments",
+        component: () => import("~/views/admin/Appointments.vue"),
+        meta: { title: "挂号管理", roles: ["ADMIN"] },
+      },
+      {
+        path: "admin/users",
+        component: () => import("~/views/admin/Users.vue"),
+        meta: { title: "用户管理", roles: ["ADMIN"] },
+      },
+      {
+        path: "doctor/dashboard",
+        component: () => import("~/views/doctor/Dashboard.vue"),
+        meta: { title: "工作台", roles: ["DOCTOR"] },
+      },
+      {
+        path: "doctor/schedules",
+        component: () => import("~/views/doctor/Schedules.vue"),
+        meta: { title: "我的排班", roles: ["DOCTOR"] },
+      },
+      {
+        path: "doctor/appointments",
+        component: () => import("~/views/doctor/Appointments.vue"),
+        meta: { title: "就诊管理", roles: ["DOCTOR"] },
+      },
+      {
+        path: "patient/home",
+        component: () => import("~/views/patient/Home.vue"),
+        meta: { title: "预约挂号", roles: ["PATIENT"] },
+      },
+      {
+        path: "patient/appointments",
+        component: () => import("~/views/patient/Appointments.vue"),
+        meta: { title: "我的挂号", roles: ["PATIENT"] },
+      },
+      {
+        path: "patient/records",
+        component: () => import("~/views/patient/Records.vue"),
+        meta: { title: "我的病历", roles: ["PATIENT"] },
+      },
+      {
+        path: "profile",
+        component: () => import("~/views/Profile.vue"),
+        meta: { title: "个人中心" },
+      },
+    ],
   },
   {
-    path: "/Login",
-    name: "Login",
-    component: () => import("~/Login.vue"),
-  },
-  {
-    path: "/mainPage",
-    name: "MainPage",
-    component: () => import("~/components/MainPage/index.vue"),
-  },
-  {
-    path: "/systemIntroduce",
-    name: "SystemIntroduce",
-    component: () => import("~/components/SystemIntroduce/index.vue"),
-  },
-  {
-    path: "/password",
-    name: "Password",
-    component: () => import("~/components/Password/index.vue"),
-  },
-  {
-    path: "/studentIntroduce",
-    name: "StudentIntroduce",
-    component: () => import("~/components/StudentIntroduce/index.vue"),
-  },
-  {
-    path: "/teacherIntroduce",
-    name: "TeacherIntroduce",
-    component: () => import("~/components/TeacherIntroduce/index.vue"),
-  },
-  {
-    path: "/menuManage",
-    name: "MenuManage",
-    component: () => import("~/components/MenuManage/index.vue"),
-  },
-  {
-    path: "/dictionaryManage",
-    name: "DictionaryManage",
-    component: () => import("~/components/DictionaryManage/index.vue"),
-  },
-
-  {
-    path: "/student",
-    name: "Student",
-    component: () => import("~/components/Student/index.vue"),
-  },
-  {
-    path: "/teacher",
-    name: "teacher",
-    component: () => import("~/components/Teacher/index.vue"),
-  },
-  {
-    path: "/course",
-    name: "Course",
-    component: () => import("~/components/Course/index.vue"),
-  },
-  {
-    path: "/score",
-    name: "Score",
-    component: () => import("~/components/Score/index.vue"),
+    path: "/:pathMatch(.*)*",
+    component: () => import("~/views/NotFound.vue"),
+    meta: { title: "页面不存在" },
   },
 ];
-//路由创建
+
 const router = createRouter({
-  history: createWebHashHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(),
   routes,
 });
-//路由导出
+
+router.beforeEach((to) => {
+  const store = useAppStore();
+  const isLoggedIn = Boolean(store.token && store.user);
+
+  if (publicPaths.includes(to.path)) {
+    if (isLoggedIn && guestOnlyPaths.includes(to.path)) {
+      return roleHome[store.user!.role];
+    }
+    return true;
+  }
+
+  if (!isLoggedIn) {
+    return "/login";
+  }
+
+  const roles = to.meta.roles as Role[] | undefined;
+  if (roles && !roles.includes(store.user!.role)) {
+    return roleHome[store.user!.role];
+  }
+
+  return true;
+});
+
+router.afterEach((to) => {
+  document.title = to.meta.title
+    ? `${to.meta.title} - 校医院预约挂号系统`
+    : "校医院预约挂号系统";
+});
+
 export default router;

@@ -90,13 +90,17 @@ public class AppointmentService {
         return Map.of("id", appointment.getId(), "status", WAITING, "remainQuota", remainQuota);
     }
 
-    public List<AppointmentItem> listMyAppointments(Integer status) {
+    public List<AppointmentItem> listMyAppointments(Integer status, LocalDate date) {
         Integer patientId = CommonMethod.getPersonId();
         List<Appointment> appointments = appointmentRepository
                 .findByPatientIdOrderByCreateTimeDesc(patientId).stream()
                 .filter(appointment -> status == null || status.equals(appointment.getStatus()))
                 .toList();
-        return viewBuilder.buildItems(appointments);
+        List<AppointmentItem> items = new ArrayList<>(viewBuilder.buildItems(appointments));
+        if (date != null) {
+            items.removeIf(item -> !date.equals(item.getWorkDate()));
+        }
+        return items;
     }
 
     /**

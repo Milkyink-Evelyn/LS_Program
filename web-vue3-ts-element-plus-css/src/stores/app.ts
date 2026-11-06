@@ -1,62 +1,46 @@
 import { defineStore } from "pinia";
-import {
-  type MenuInfo, type UserInfo, SystemConfig
-} from "~/infrastructure/models/store";
-import { type JwtResponse, } from "~/infrastructure/models/login";
+import type { CurrentUser, LoginResponse, Role } from "~/types";
 
 export const useAppStore = defineStore("app", {
   state: () => ({
-    isAuthenticated: false,
-    usernameSave: "",
-    passwordSave: "",
-    remember: false,
-    userInfo: {
-      loggedIn: false,
-      username: "",
-      perName: "",
-      token: "",
-      id: 0,
-      role: '',
-    } as UserInfo,
-
-    systemConfig: {
-      menuList: [] as MenuInfo[],
-      dataBaseUserName: '',
-    } as SystemConfig,
+    token: "",
+    user: null as CurrentUser | null,
   }),
+
+  getters: {
+    role: (state): Role | "" => state.user?.role ?? "",
+    isLoggedIn: (state) => Boolean(state.token && state.user),
+  },
+
   actions: {
-    async login(res: JwtResponse, isAuthenticated: boolean): Promise<void> {
-      this.isAuthenticated = isAuthenticated;
-      this.userInfo = {
-        loggedIn: true,
-        username: res.username,
-        perName: res.perName,
-        token: res.token,
+    setLogin(res: LoginResponse) {
+      this.token = res.token;
+      // 模板后端可能返回 ROLE_ADMIN，这里做一次防御性归一化
+      const role = String(res.role).replace(/^ROLE_/, "") as Role;
+      this.user = {
         id: res.id,
-        role: res.role,
+        username: res.username,
+        realName: res.perName || res.username,
+        // 登录响应不包含 email，个人中心会调用 /api/users/me 补齐
+        email: null,
+        role,
       };
     },
+
+    updateUser(patch: Partial<Pick<CurrentUser, "realName" | "email">>) {
+      if (this.user) {
+        this.user = { ...this.user, ...patch };
+      }
+    },
+
     logout() {
-      this.userInfo = {
-        loggedIn: false,
-        username: "",
-        perName: "",
-        token: "",
-        role: '',
-        id: 0,
-      };
-      this.isAuthenticated = false;
-    },
-    async setNavi(menuList: MenuInfo[], dataBaseUserName: string): Promise<void> {
-      this.systemConfig.menuList = menuList;
-      this.systemConfig.dataBaseUserName = dataBaseUserName;
+      this.token = "";
+      this.user = null;
     },
   },
+
   persist: {
     storage: localStorage,
-    // debug: true,
-    // afterRestore: (context: PiniaPluginContext) => {
-    //   console.log(context);
-    // },
+    key: "hospital-app",
   },
 });

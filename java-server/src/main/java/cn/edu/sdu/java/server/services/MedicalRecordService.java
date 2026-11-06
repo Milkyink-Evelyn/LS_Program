@@ -15,6 +15,8 @@ import cn.edu.sdu.java.server.util.RoleUtil;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -41,7 +43,7 @@ public class MedicalRecordService {
         this.viewBuilder = viewBuilder;
     }
 
-    public List<MedicalRecordItem> listMyRecords() {
+    public List<MedicalRecordItem> listMyRecords(LocalDate date) {
         Integer patientId = CommonMethod.getPersonId();
         List<Integer> appointmentIds = appointmentRepository
                 .findByPatientIdOrderByCreateTimeDesc(patientId).stream()
@@ -52,7 +54,12 @@ public class MedicalRecordService {
         }
         List<MedicalRecord> records = medicalRecordRepository
                 .findByAppointmentIdInOrderByCreateTimeDesc(appointmentIds);
-        return viewBuilder.buildRecordItems(records);
+        List<MedicalRecordItem> items =
+                new ArrayList<>(viewBuilder.buildRecordItems(records));
+        if (date != null) {
+            items.removeIf(item -> !date.equals(item.getWorkDate()));
+        }
+        return items;
     }
 
     public MedicalRecordItem getRecordByAppointment(Integer appointmentId) {
