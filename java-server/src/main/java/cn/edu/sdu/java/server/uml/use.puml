@@ -1,0 +1,66 @@
+@startuml
+' 校医院预约挂号系统 - 用例图
+left to right direction
+skinparam packageStyle rectangle
+
+actor "患者\nPATIENT" as P
+actor "医生\nDOCTOR" as D
+actor "管理员\nADMIN" as A
+actor "登录用户\n（抽象）" as U
+
+U <|-- P
+U <|-- D
+U <|-- A
+
+rectangle "校医院预约挂号系统" {
+    usecase "浏览科室与医生" as UC_BROWSE
+    usecase "查看排班" as UC_SCHEDULE
+    usecase "预约挂号" as UC_BOOK
+    usecase "取消挂号" as UC_CANCEL
+    usecase "查看我的挂号" as UC_MY_APPT
+    usecase "查看我的病历" as UC_MY_RECORD
+
+    usecase "查看我的排班" as UC_DOC_SCHEDULE
+    usecase "查看就诊列表" as UC_DOC_LIST
+    usecase "接诊并填写病历" as UC_TREAT
+    usecase "查看患者病历" as UC_DOC_RECORD
+
+    usecase "科室管理" as UC_DEPT
+    usecase "医生管理" as UC_DOCTOR
+    usecase "排班管理" as UC_SCHEDULE_ADMIN
+    usecase "挂号管理" as UC_APPT_ADMIN
+    usecase "用户管理" as UC_USER
+    usecase "统计报表" as UC_STAT
+
+    usecase "登录 / 注册 / 找回密码" as UC_LOGIN
+    usecase "查看和修改个人资料" as UC_PROFILE
+    usecase "修改密码" as UC_PWD
+}
+
+P --> UC_BROWSE
+P --> UC_SCHEDULE
+P --> UC_BOOK
+P --> UC_CANCEL
+P --> UC_MY_APPT
+P --> UC_MY_RECORD
+
+D --> UC_DOC_SCHEDULE
+D --> UC_DOC_LIST
+D --> UC_TREAT
+D --> UC_DOC_RECORD
+
+A --> UC_DEPT
+A --> UC_DOCTOR
+A --> UC_SCHEDULE_ADMIN
+A --> UC_APPT_ADMIN
+A --> UC_USER
+A --> UC_STAT
+
+U --> UC_LOGIN
+U --> UC_PROFILE
+U --> UC_PWD
+
+UC_BOOK ..> UC_SCHEDULE : <<include>>
+UC_CANCEL ..> UC_MY_APPT : <<extend>>
+UC_TREAT ..> UC_DOC_LIST : <<include>>
+@enduml
