@@ -29,6 +29,10 @@ public class RoleUtil {
         return "DOCTOR".equals(currentRole());
     }
 
+    public static boolean isPatient() {
+        return "PATIENT".equals(currentRole());
+    }
+
     /**
      * 非管理员直接抛 AccessDeniedException，由统一异常处理返回 HTTP 403。
      */
@@ -43,6 +47,15 @@ public class RoleUtil {
      */
     public static void requireDoctor() {
         if (!isDoctor()) {
+            throw new AccessDeniedException("无权限访问");
+        }
+    }
+
+    /**
+     * 非患者直接抛 AccessDeniedException，由统一异常处理返回 HTTP 403。
+     */
+    public static void requirePatient() {
+        if (!isPatient()) {
             throw new AccessDeniedException("无权限访问");
         }
     }

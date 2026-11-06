@@ -15,4 +15,6 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, In
     boolean existsByAppointmentId(Integer appointmentId);
 
     List<MedicalRecord> findByAppointmentIdInOrderByCreateTimeDesc(Collection<Integer> appointmentIds);
+
+    List<MedicalRecord> findByAppointmentIdIn(Collection<Integer> appointmentIds);
 }

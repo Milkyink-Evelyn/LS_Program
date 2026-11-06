@@ -38,8 +38,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<DataResponse> handleAccessDeniedException(AccessDeniedException e) {
+        String msg = e.getMessage();
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(new DataResponse(1, null, "无权限访问"));
+                .body(new DataResponse(1, null,
+                        msg == null || msg.isBlank() ? "无权限访问" : msg));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
