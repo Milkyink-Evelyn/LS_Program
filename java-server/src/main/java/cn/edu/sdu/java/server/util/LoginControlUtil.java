@@ -105,6 +105,12 @@ public class LoginControlUtil {
     public String getValidateCode(Integer validateCodeId) {
         return codeMap.get(validateCodeId);
     }
+    /** 验证码使用后立即移除，防止重复使用 */
+    public void removeValidateCode(Integer validateCodeId) {
+        if (validateCodeId != null) {
+            codeMap.remove(validateCodeId);
+        }
+    }
     public Integer getLoginCount(String username){
         Integer count = loginCountMap.get(username);
         if(count == null)
