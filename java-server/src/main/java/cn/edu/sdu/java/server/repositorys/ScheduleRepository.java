@@ -22,6 +22,9 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
 
     List<Schedule> findByWorkDateGreaterThanEqualOrderByWorkDateAscTimeSlotAsc(LocalDate date);
 
+    List<Schedule> findByWorkDateBetweenOrderByWorkDateAscTimeSlotAsc(
+            LocalDate start, LocalDate end);
+
     List<Schedule> findByDoctorIdAndWorkDateBetweenOrderByWorkDateAscTimeSlotAsc(
             Integer doctorId, LocalDate start, LocalDate end);
 

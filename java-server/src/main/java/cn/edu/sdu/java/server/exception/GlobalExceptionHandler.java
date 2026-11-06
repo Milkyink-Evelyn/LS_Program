@@ -13,6 +13,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.stream.Collectors;
 
@@ -54,6 +55,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public DataResponse handleMessageNotReadable(HttpMessageNotReadableException e) {
         return CommonMethod.getReturnMessageError("请求参数格式错误");
+    }
+
+    /**
+     * 查询参数类型不匹配，例如 date 传成了 2026/11/06。
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public DataResponse handleTypeMismatch(MethodArgumentTypeMismatchException e) {
+        if ("date".equals(e.getName())) {
+            return CommonMethod.getReturnMessageError("日期格式错误，应为 yyyy-MM-dd");
+        }
+        return CommonMethod.getReturnMessageError("参数格式错误：" + e.getName());
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

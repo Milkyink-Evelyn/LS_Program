@@ -25,11 +25,24 @@ public class RoleUtil {
         return "ADMIN".equals(currentRole());
     }
 
+    public static boolean isDoctor() {
+        return "DOCTOR".equals(currentRole());
+    }
+
     /**
      * 非管理员直接抛 AccessDeniedException，由统一异常处理返回 HTTP 403。
      */
     public static void requireAdmin() {
         if (!isAdmin()) {
+            throw new AccessDeniedException("无权限访问");
+        }
+    }
+
+    /**
+     * 非医生直接抛 AccessDeniedException，由统一异常处理返回 HTTP 403。
+     */
+    public static void requireDoctor() {
+        if (!isDoctor()) {
             throw new AccessDeniedException("无权限访问");
         }
     }
