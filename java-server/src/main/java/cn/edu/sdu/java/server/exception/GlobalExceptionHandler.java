@@ -15,6 +15,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.stream.Collectors;
 
@@ -84,6 +86,15 @@ public class GlobalExceptionHandler {
     public DataResponse handleDataIntegrityViolation(DataIntegrityViolationException e) {
         log.warn("数据完整性校验失败", e);
         return CommonMethod.getReturnMessageError("数据存在关联或重复，无法完成操作");
+    }
+
+    /**
+     * 不存在的接口直接返回 404，不要落到通用异常里变成 200 的“服务器内部错误”。
+     */
+    @ExceptionHandler({NoResourceFoundException.class, NoHandlerFoundException.class})
+    public ResponseEntity<DataResponse> handleNotFound(Exception e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new DataResponse(1, null, "接口不存在"));
     }
 
     @ExceptionHandler(Exception.class)

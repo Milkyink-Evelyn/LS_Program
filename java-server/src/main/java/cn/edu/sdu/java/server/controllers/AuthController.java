@@ -58,9 +58,4 @@ public class AuthController {
     public DataResponse resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         return authService.resetPassword(request);
     }
-
-    @PostMapping("/registerUser")
-    public DataResponse registerUser(@Valid @RequestBody DataRequest dataRequest) {
-        return authService.registerUser(dataRequest);
-    }
 }
