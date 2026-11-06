@@ -2,6 +2,7 @@ package cn.edu.sdu.java.server.exception;
 
 import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.util.CommonMethod;
+import io.jsonwebtoken.JwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -34,6 +35,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<DataResponse> handleAuthenticationException(AuthenticationException e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(new DataResponse(1, null, "用户名或密码错误"));
+    }
+
+    /**
+     * Token 格式错误、签名错误或已过期时，按未登录处理，避免前端拿到 200 的业务错误。
+     */
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<DataResponse> handleJwtException(JwtException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new DataResponse(1, null, "登录状态已失效，请重新登录"));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
